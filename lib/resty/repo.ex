@@ -238,35 +238,35 @@ defmodule Resty.Repo do
     end
   end
 
-  @spec delete!(Resty.Resource.t()) :: true
-  @doc """
-  Same as `delete/1` but raise in case of error.
-  """
-  def delete!(resource) do
-    case delete(resource) do
-      {:ok, response} -> response
-      {:error, error} -> raise error
-    end
-  end
-
-  @spec delete!(Resty.Resource.mod(), Resty.Resource.primary_key()) :: true
+  @spec delete!(Resty.Resource.t(), []) :: true
   @doc """
   Same as `delete/2` but raise in case of error.
   """
-  def delete!(module, id) do
-    case delete(module, id) do
+  def delete!(resource, options) do
+    case delete(resource, options) do
       {:ok, response} -> response
       {:error, error} -> raise error
     end
   end
 
-  @spec delete(Resty.Resource.t()) :: {:ok, true} | {:error, Exception.t()}
+  @spec delete!(Resty.Resource.mod(), Resty.Resource.primary_key(), []) :: true
+  @doc """
+  Same as `delete/3` but raise in case of error.
+  """
+  def delete!(module, id, options) do
+    case delete(module, id, options) do
+      {:ok, response} -> response
+      {:error, error} -> raise error
+    end
+  end
+
+  @spec delete(Resty.Resource.t(), []) :: {:ok, true} | {:error, Exception.t()}
   @doc """
   Delete the given resource.
   """
-  def delete(resource) do
+  def delete(resource, options) do
     id = Map.get(resource, resource.__struct__.primary_key())
-    delete(resource.__struct__, id)
+    delete(resource.__struct__, id, options)
   end
 
   @spec delete(Resty.Resource.mod(), Resty.Resource.primary_key()) ::
@@ -274,11 +274,12 @@ defmodule Resty.Repo do
   @doc """
   Delete the resource matching the given module and id.
   """
-  def delete(module, id) do
+  def delete(module, id, options) do
+    headers = options[:headers] || []
     request = %Request{
       method: :delete,
       url: Resource.url_for(module, id),
-      headers: module.headers()
+      headers: module.headers() ++ headers
     }
 
     case request |> Auth.authenticate(module) |> Connection.send(module) do

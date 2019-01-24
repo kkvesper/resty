@@ -232,13 +232,13 @@ defmodule Resty.RepoTest do
   test "delete :ok" do
     {:ok, post} = Repo.find(Post, 1)
 
-    assert {:ok, true} = Repo.delete(post)
+    assert {:ok, true} = Repo.delete(post, [])
   end
 
   test "delete :error" do
     {:ok, post} = Repo.find(Post, 2)
 
-    delete_response = post |> Repo.delete()
+    delete_response = post |> Repo.delete([])
 
     assert {:error, %Error.ForbiddenAccess{}} = delete_response
   end
@@ -246,14 +246,14 @@ defmodule Resty.RepoTest do
   test "delete! ok" do
     {:ok, post} = Repo.find(Post, 1)
 
-    assert true = Repo.delete!(post)
+    assert true = Repo.delete!(post, [])
   end
 
   test "delete! raise" do
     assert_raise Error.ForbiddenAccess, fn ->
       {:ok, post} = Repo.find(Post, 2)
 
-      Repo.delete!(post)
+      Repo.delete!(post, [])
     end
   end
 
