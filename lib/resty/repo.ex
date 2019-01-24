@@ -98,8 +98,8 @@ defmodule Resty.Repo do
   @doc """
   Same as `find/2` but raise in case of error.
   """
-  def find!(module, id) do
-    case find(module, id) do
+  def find!(module, id, options \\ []) do
+    case find(module, id, options) do
       {:ok, response} -> response
       {:error, error} -> raise error
     end
@@ -110,11 +110,13 @@ defmodule Resty.Repo do
   @doc """
   Return the matching resource for the given module and id or nil.
   """
-  def find(module, id) do
+  def find(module, id, options \\ []) do
+    headers = options[:headers] || []
+
     request = %Request{
       method: :get,
       url: Resource.url_for(module, id),
-      headers: module.headers()
+      headers: module.headers() ++ headers
     }
 
     case request |> Auth.authenticate(module) |> Connection.send(module) do
