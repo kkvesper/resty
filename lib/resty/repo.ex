@@ -167,8 +167,8 @@ defmodule Resty.Repo do
   @doc """
   Same as `save/1` but raise in case of error.
   """
-  def save!(resource) do
-    case save(resource) do
+  def save!(resource, options \\ []) do
+    case save(resource, options) do
       {:ok, response} -> response
       {:error, error} -> raise error
     end
@@ -179,18 +179,19 @@ defmodule Resty.Repo do
   Persist the given resource, this will perform an UPDATE request if the resource already
   has an id, a POST request will be sent otherwise.
   """
-  def save(resource) do
+  def save(resource, options \\ []) do
     id = Map.get(resource, resource.__struct__.primary_key())
-    save(resource, id)
+    save(resource, id, options)
   end
 
-  defp save(resource = %{__struct__: module}, nil) do
+  defp save(resource = %{__struct__: module}, nil, options) do
+    headers = options[:headers] || []
     resource = resource |> Serializer.serialize()
 
     request = %Request{
       method: :post,
       url: Resource.url_for(module),
-      headers: module.headers(),
+      headers: module.headers() ++ headers,
       body: resource
     }
 
@@ -200,13 +201,14 @@ defmodule Resty.Repo do
     end
   end
 
-  defp save(resource = %{__struct__: module}, id) do
+  defp save(resource = %{__struct__: module}, id, options) do
+    headers = options[:headers] || []
     resource = resource |> Serializer.serialize()
 
     request = %Request{
       method: :put,
       url: Resource.url_for(module, id),
-      headers: module.headers(),
+      headers: module.headers() ++ headers,
       body: resource
     }
 
